@@ -1,5 +1,6 @@
 import requests
 import json
+from datetime import date 
 
 import os
 from dotenv import load_dotenv
@@ -70,11 +71,6 @@ def get_video_ids(playlistId):
     except requests.exceptions.RequestException as e:
         raise e
 
-def batch_list(video_id_list, batch_size):
-    for i in range(0, len(video_id_list), batch_size):
-        yield video_id_list[i:i + batch_size]
-
-        
 
 def extract_video_data(videos_ids):
     
@@ -82,9 +78,7 @@ def extract_video_data(videos_ids):
 
     def batch_list(video_id_list, batch_size):
         for i in range(0, len(video_id_list), batch_size):
-            yield video_id_list[i:i + batch_size]
-
-    
+            yield video_id_list[i:i + batch_size]  
     
     try:
         for batch in batch_list(videos_ids, maxResults):
@@ -117,9 +111,13 @@ def extract_video_data(videos_ids):
     except requests.exceptions.RequestException as e:
         raise e
     
+def save_to_json(extracted_data):
+    file_path = f"./data/YT_data_{date.today()}.json"
+    with open(file_path, "w", encoding="utf-8") as json_outfile:
+        json.dump(extracted_data, json_outfile, indent=4, ensure_ascii=False)
 
 if __name__ == "__main__":
     playlistId = get_playlist_id()
     video_ids=(get_video_ids(playlistId))
-    print(extract_video_data(video_ids))
-
+    video_data=extract_video_data(video_ids)
+    save_to_json(video_data)
